@@ -108,11 +108,11 @@ def riconoscimento(image3):
     image_yellow = cv.bitwise_and(image3,image3,mask=mask_yellow) #create an image where's only yellow(intersection between image3 and mask_yellow)
     image_red = cv.bitwise_and(image3,image3,mask=mask_red) #create an image where's only red(intersection between image3 and mask_red)
 
-    blue_cone = cv.cvtColor(image_blue, cv.COLOR_BGR2GRAY) 
-    yellow_cone = cv.cvtColor(image_yellow, cv.COLOR_BGR2GRAY)
-    red_cone = cv.cvtColor(image_red, cv.COLOR_BGR2GRAY)
+    blue_cone = cv.cvtColor(image_blue, cv.COLOR_BGR2GRAY) #convert the image in gray scale
+    yellow_cone = cv.cvtColor(image_yellow, cv.COLOR_BGR2GRAY) #convert the image in gray scale
+    red_cone = cv.cvtColor(image_red, cv.COLOR_BGR2GRAY) #convert the image in gray scale
 
-    blue_contours = draw_contours(blue_cone,image4,210,270,"blue_cone")   
+    blue_contours = draw_contours(blue_cone,image4,210,270,"blue_cone")   #function which draw rectangle around the cone
     yellow_contours = draw_contours(yellow_cone,blue_contours,160,200,"yellow_cone")
     red_contours = draw_contours(red_cone,yellow_contours,200,360,"red_cone")
 
@@ -120,22 +120,21 @@ def riconoscimento(image3):
 
 def draw_contours(image,all_image,l,w,string1):
     
-    th1 = cv.adaptiveThreshold(image,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY,11,2)
-    edged = cv.Canny(th1, 50, 200) 
-    contours, _ = cv.findContours(edged,cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    th1 = cv.adaptiveThreshold(image,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY,11,2) #create an image with only contours
+    edged = cv.Canny(th1, 50, 200) #isolate border
+    contours, _ = cv.findContours(edged,cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE) #array with coordinates of the border
     
-    approximation = [None]*len(contours)
+    approximation = [None]*len(contours) #array of the same lenght of contours
     boundRect = [None]*len(contours)
 
     for i, c in enumerate(contours):
-        approximation[i] = cv.approxPolyDP(c, 80, True)
-        boundRect[i]= cv.boundingRect(approximation[i]) 
+        boundRect[i]= cv.boundingRect(approximation[i])  #create the coordinates for rectangles
 
     x_start = 2000
     y_start = 2000
 
-    for i in range(len(boundRect)):
-        a = boundRect[i][0]
+    for i in range(len(boundRect)): #create only the biggest rectangle around the cone
+        a = boundRect[i][0] 
         b = boundRect[i][1]
         c = boundRect[i][2]
         d = boundRect[i][3]
@@ -151,7 +150,7 @@ def draw_contours(image,all_image,l,w,string1):
         if d > w :
             w = d    
 
-    f = open("coordinates.txt", "a")
+    f = open("coordinates.txt", "a") #txt file writing
 
     all_x = x_start+l
     all_y = y_start+w
@@ -166,7 +165,7 @@ def draw_contours(image,all_image,l,w,string1):
     f.writelines(Line)
     f.close
 
-    cv.rectangle(all_image, (int(x_start), int(y_start)), (int(x_start + l), int(y_start + w)), (0,255,0), 2)
+    cv.rectangle(all_image, (int(x_start), int(y_start)), (int(x_start + l), int(y_start + w)), (0,255,0), 2) #draw the rectangle
     return all_image
 
 if __name__ =="__main__":
